@@ -6,6 +6,8 @@ import six
 from Crypto.Hash import HMAC
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
 from base64 import b64decode
 
 from .sign import Signer
@@ -32,7 +34,12 @@ class Verifier(Signer):
             h = self._hash.new()
             h.update(data)
             return self._rsa.verify(h, b64decode(signature))
-        
+        elif self.sign_algorithm == 'ecdsa': 
+            pub_key = self._ecdsa.public_key()
+            print data
+            verifier = pub_key.verifier(b64decode(signature), ec.ECDSA(hashes.SHA256()))
+            verifier.update(data)
+            return verifier.verify()
         elif self.sign_algorithm == 'hmac':
             h = self._sign_hmac(data)
             s = b64decode(signature)

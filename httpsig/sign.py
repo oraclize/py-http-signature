@@ -4,6 +4,9 @@ import six
 from Crypto.Hash import HMAC
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
 
 from .utils import *
 
@@ -25,6 +28,7 @@ class Signer(object):
         assert algorithm in ALGORITHMS, "Unknown algorithm"
         if isinstance(secret, six.string_types): secret = secret.encode("ascii")
         
+        self._ecdsa = None
         self._rsa = None
         self._hash = None
         self.sign_algorithm, self.hash_algorithm = algorithm.split('-')
@@ -35,8 +39,14 @@ class Signer(object):
                 self._rsa = PKCS1_v1_5.new(rsa_key)
                 self._hash = HASHES[self.hash_algorithm]
             except ValueError:
-                raise HttpSigException("Invalid key.")
-            
+              raise HttpSigException("Invalid key.")
+        elif self.sign_algorithm == 'ecdsa':
+            try:
+                curve = ec.SECP256K1()
+                self._ecdsa = ec.derive_private_key(long(secret), curve, default_backend())
+                self._hash = HASHES[self.hash_algorithm]
+            except ValueError:
+              raise HttpSigException("Invalid key.")
         elif self.sign_algorithm == 'hmac':
             self._hash = HMAC.new(secret, digestmod=HASHES[self.hash_algorithm])
 
@@ -49,6 +59,11 @@ class Signer(object):
         h = self._hash.new()
         h.update(data)
         return self._rsa.sign(h)
+    
+    def _sign_ecdsa(self, data): 
+        if isinstance(data, six.string_types): data = data.encode("ascii")
+        print data
+        return self._ecdsa.sign(data, ec.ECDSA(hashes.SHA256()))
 
     def _sign_hmac(self, data):
         if isinstance(data, six.string_types): data = data.encode("ascii")
@@ -61,6 +76,8 @@ class Signer(object):
         signed = None
         if self._rsa:
             signed = self._sign_rsa(data)
+        elif self._ecdsa:
+            signed = self._sign_ecdsa(data)
         elif self._hash:
             signed = self._sign_hmac(data)
         if not signed:

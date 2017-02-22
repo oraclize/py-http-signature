@@ -14,7 +14,7 @@ except ImportError:
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA, SHA256, SHA512
 
-ALGORITHMS = frozenset(['rsa-sha1', 'rsa-sha256', 'rsa-sha512', 'hmac-sha1', 'hmac-sha256', 'hmac-sha512'])
+ALGORITHMS = frozenset(['rsa-sha1', 'rsa-sha256', 'rsa-sha512','ecdsa-sha256', 'hmac-sha1', 'hmac-sha256', 'hmac-sha512'])
 HASHES = {'sha1':   SHA,
           'sha256': SHA256,
           'sha512': SHA512}
