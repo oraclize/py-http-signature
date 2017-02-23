@@ -43,7 +43,7 @@ class Signer(object):
         elif self.sign_algorithm == 'ecdsa':
             try:
                 curve = ec.SECP256K1()
-                self._ecdsa = ec.derive_private_key(long(secret.encode('hex'), 16), curve, default_backend())
+                self._ecdsa = ec.derive_private_key(long(secret, 16), curve, default_backend())
                 self._hash = HASHES[self.hash_algorithm]
             except ValueError:
               raise HttpSigException("Invalid key.")
