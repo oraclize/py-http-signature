@@ -62,7 +62,6 @@ class Signer(object):
     
     def _sign_ecdsa(self, data): 
         if isinstance(data, six.string_types): data = data.encode("ascii")
-        print data
         return self._ecdsa.sign(data, ec.ECDSA(hashes.SHA256()))
 
     def _sign_hmac(self, data):

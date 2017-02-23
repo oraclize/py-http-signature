@@ -36,7 +36,6 @@ class Verifier(Signer):
             return self._rsa.verify(h, b64decode(signature))
         elif self.sign_algorithm == 'ecdsa': 
             pub_key = self._ecdsa.public_key()
-            print data
             verifier = pub_key.verifier(b64decode(signature), ec.ECDSA(hashes.SHA256()))
             verifier.update(data)
             return verifier.verify()
